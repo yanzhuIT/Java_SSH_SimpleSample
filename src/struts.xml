@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+	<package name="demo1" extends="struts-default" namespace="/">
+	
+	<!-- class属性里面不写之前常用的action全路径，如果写action的对象会创建两次（另外一次由spring在bean1中创建），
+	为了把创建对象都交给spring，所以需要写spring中配置的action的id值 -->
+	<action name="userAction" class="userAction"></action>
+	
+	</package>
+</struts>

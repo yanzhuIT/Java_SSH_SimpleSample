@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 不带hibernate核心配置文件的集成方法 -->
+
+
+	<!-- c3p0连接池的配置 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<property name="jdbcUrl" value="jdbc:mysql:///spring_day04"></property>
+		<property name="user" value="root"></property>
+		<property name="password" value="dev20*yz#178988"></property>
+	</bean>
+
+
+	<!-- 把hibernate中对sessionFactory的创建交给spring -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<!-- 注入当前文件定义好的c3p0的dataSource -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 注入（指定）hibernate的核心配置文件 -->
+		<!-- <property name="configLocations" value="classpath:hibernate.cfg.xml"></property> -->
+
+		<!-- 注入hibernate的基本信息 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
+			</props>
+		</property>
+
+		<!-- 映射文件的引入 -->
+		<property name="mappingResources">
+			<list>
+				<value>com/github/entity/user.hbm.xml</value>
+			</list>
+
+		</property>
+
+	</bean>
+
+	<!-- 配置事物管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<!-- 开启事物注解 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+
+	<!-- 配置action IOC策略 -->
+	<bean id="userAction" class="com.github.action.UserAction" scope="prototype">
+		<!-- 注入service层的对象 -->
+		<property name="userService" ref="serService"></property>
+	</bean>
+
+
+	<!-- 配置service层的对象 IOC策略 -->
+	<bean id="serService" class="com.github.service.UserService">
+		<!-- 接口变量=实现类的对象，满足多态和IOC -->
+		<property name="userDao" ref="userDaoImpl"></property>
+	</bean>
+
+	<!-- 创建Dao接口的实现类的对象 -->
+	<bean id="userDaoImpl" class="com.github.dao.UserDaoImpl">
+		<!-- 注入hibernate模板对象 -->
+		<property name="hibernateTemplate" ref="hibernateTemplate"></property>
+	</bean>
+
+
+	<!-- 创建hibernate模板对象 -->
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate5.HibernateTemplate">
+		<!-- 注入sessionFactory -->
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+
+</beans>
